@@ -2,12 +2,13 @@ import React, { useState, useMemo, useRef } from "react";
 import StoreContex from "./store/store-context";
 import ListItems from "./components/ListItems";
 import { useEffect } from "react";
-import { StyleSheet, Text, View, SafeAreaView, FlatList, onPress } from "react-native";
+import { StyleSheet, Text, View, SafeAreaView, FlatList } from "react-native";
 import { SAMPLE_DATA } from "./assets/data/sampleData";
 import {
   BottomSheetModal,
   BottomSheetModalProvider,
 } from "@gorhom/bottom-sheet";
+import Chart from "./components/Chart";
 
 const assetsURL = "https://api.kraken.com/0/public/Assets";
 const assetsPairBTCUSD = "https://api.kraken.com/0/public/Ticker?pair=BTCUSD";
@@ -23,10 +24,11 @@ const ListHeader = () => (
 );
 
 export default function App() {
-  const [listBtc, setListBtc] = useState();
-  const [listHtc, setListHtc] = useState();
+  const [listBtc, setListBtc] = useState([]);
+  const [listEth, setListEth] = useState([]);
+  const [selectedCoinData, setSelectedCoinData] = useState(null);
   // ref
-  const bottomSheetModalRef = useRef(null) ;
+  const bottomSheetModalRef = useRef(null);
   // variables
   const snapPoints = useMemo(() => ["50%"], []);
 
@@ -46,15 +48,15 @@ export default function App() {
       error.message;
     }
   };
-  const fetchAssetsHtc = async () => {
+  const fetchAssetsEth = async () => {
     try {
-      const res = await fetch(assetsPairBTCUSD);
+      const res = await fetch(assetsPairETHUSD);
 
       if (!res) {
         throw new Error("Not possible to fetch assets");
       }
       const data = await res.json();
-      setListHtc(data.result);
+      setListEth(data.result);
       console.log("results", data.result);
 
       return data;
@@ -65,45 +67,56 @@ export default function App() {
 
   useEffect(() => {
     fetchAssetsBtc();
-    fetchAssetsHtc();
+    fetchAssetsEth();
   }, []);
 
-  const openModal = () => {
-      bottomSheetModalRef.current?.present();
-  }
+  const openModal = (item) => {
+    setSelectedCoinData(item);
+    bottomSheetModalRef.current?.present();
+  };
 
   return (
-    <BottomSheetModalProvider>
-      <SafeAreaView style={styles.container}>
-        <FlatList
-          keyExtractor={(item) => item.id}
-          data={SAMPLE_DATA}
-          renderItem={({ item }) => (
-            <ListItems
-              name={item.name}
-              symbol={item.symbol}
-              currentPrice={item.current_price}
-              priceChangePercentage7d={
-                item.price_change_percentage_7d_in_currency
-              }
-              logoUrl={item.image}
-              onPress={()=>openModal()}
-            />
-          )}
-          ListHeaderComponent={<ListHeader />}
-        />
-      </SafeAreaView>
-      
-      <BottomSheetModal
-        ref={bottomSheetModalRef}
-        index={0}
-        snapPoints={snapPoints}
-      >
-        <View style={styles.contentContainer}>
-          <Text>Awesome 🎉</Text>
-        </View>
-      </BottomSheetModal>
-    </BottomSheetModalProvider>
+    <StoreContex.Provider value={{ ethArray: [listEth], btcArray: [listBtc] }}>
+      <BottomSheetModalProvider>
+        <SafeAreaView style={styles.container}>
+          <FlatList
+            keyExtractor={(item) => item.id}
+            data={SAMPLE_DATA}
+            renderItem={({ item }) => (
+              <ListItems
+                name={item.name}
+                symbol={item.symbol}
+                currentPrice={item.current_price}
+                priceChangePercentage7d={
+                  item.price_change_percentage_7d_in_currency
+                }
+                logoUrl={item.image}
+                onPress={() => openModal(item)}
+              />
+            )}
+            ListHeaderComponent={<ListHeader />}
+          />
+        </SafeAreaView>
+
+        <BottomSheetModal
+          ref={bottomSheetModalRef}
+          index={0}
+          snapPoints={snapPoints}
+          style={styles.bottomSheetModal}
+        >
+          { selectedCoinData ? (
+          <Chart
+            currentPrice={selectedCoinData.current_price}
+            logoUrl={selectedCoinData.image}
+            name={selectedCoinData.name}
+            symbol={selectedCoinData.symbol}
+            priceChangePercentage7d={selectedCoinData.price_change_percentage_7d_in_currency}
+            sparkline={selectedCoinData?.sparkline_in_7d.price}
+          />
+        ) : null}
+        </BottomSheetModal>
+      </BottomSheetModalProvider>
+    </StoreContex.Provider>
   );
 }
 
@@ -113,8 +126,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   titleWrapper: {
-    marginTop: 40,
-    paddingHorizontal: 20,
+    marginTop: 20,
+    paddingHorizontal: 16,
   },
   largeTitle: {
     fontSize: 24,
@@ -123,7 +136,17 @@ const styles = StyleSheet.create({
   divider: {
     height: StyleSheet.hairlineWidth,
     backgroundColor: "#A9ABB1",
-    marginHorizontal: 15,
+    marginHorizontal: 16,
     marginTop: 16,
+  },
+  bottomSheet: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: -4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
 });
