@@ -11,7 +11,8 @@ import {
 import Chart from "./components/Chart";
 
 const assetsURL = "https://api.kraken.com/0/public/Assets";
-const assetsPairBTCUSD = "https://api.kraken.com/0/public/Ticker?pair=BTCUSD";
+const assetsPairBTCUSD =
+  "https://api.kraken.com/0/public/Ticker?pair=BTCUSD,ETHUSD";
 const assetsPairETHUSD = "https://api.kraken.com/0/public/Ticker?pair=ETHUSD";
 
 const ListHeader = () => (
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 16,
   },
-  bottomSheet: {
+  bottomSheetModal: {
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
