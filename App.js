@@ -30,7 +30,7 @@ export default function App() {
   // ref
   const bottomSheetModalRef = useRef(null);
   // variables
-  const snapPoints = useMemo(() => ["50%"], []);
+  const snapPoints = useMemo(() => ["35%"], []);
 
   const fetchAssetsBtc = async () => {
     try {

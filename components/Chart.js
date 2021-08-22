@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useContext } from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
+import StoreContex from "../store/store-context";
+
 
 const Chart = ({
   currentPrice,
@@ -9,6 +11,9 @@ const Chart = ({
   symbol,
   sparkline,
 }) => {
+  const priceChangeColor = priceChangePercentage7d > 0 ? "#34C759" : "#FF3B30";
+  const ctx = useContext(StoreContex)
+  console.log('STORE CONTEXT',ctx)
   return (
     <View style={styles.chartWrapper}>
       <View style={styles.titlesWrapper}>
@@ -26,9 +31,9 @@ const Chart = ({
         <Text style={styles.boldTitle}>
           ${currentPrice.toLocaleString("en-US", { currency: "USD" })}
         </Text>
-        <Text style={styles.title}>
+        <Text style={[styles.title, { color: priceChangeColor }]}>
           {" "}
-          {priceChangePercentage7d.toFixed(2)}%{" "}
+          {priceChangePercentage7d.toFixed(2)}% 
         </Text>
       </View>
     </View>
